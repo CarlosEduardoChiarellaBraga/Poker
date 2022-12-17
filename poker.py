@@ -2,10 +2,9 @@ import random
 import time 
 
 #ToDo's:
-#1-->betting system (Pre-Flop: Done) (Post-Flop, Post-Turn, Post-River: ToDo)
-#2-->blind increase system (time)
-#3-->card deal (Private Cards: Done) (Flop, Turn, River: ToDo)
-#4-->check who won
+#1-->blind increase system (time)
+#2-->check who won at showdown at AwardPot()
+#3-->sidepots at AwardPot. Idea: change the Player.pot from being an integer to a list. I will have to keep track of which player is on each pot, and know how to divide it.
 
 #Setting game variables:
 num_players = 9
@@ -59,7 +58,7 @@ class Player:
         return -1
          
     def Raise(self):
-        bet = int(input(f"{Player.min_bet} is the min bet. You have {self.chips}Raise to: "))
+        bet = int(input(f"Raise to: "))
         if self.chips>=bet:
             if bet >= Player.min_bet + Player.blinds:
                 Player.pot += bet - self.cur_bet
@@ -67,7 +66,7 @@ class Player:
                 self.cur_bet = bet
                 Player.min_bet = bet
             else:
-                print("Distancia de valor muito pequeno. Call")
+                print("Small increase. Call/Check")
                 self.Call()
         else:
             print("All In")
@@ -87,12 +86,38 @@ class Player:
     def Fold(self):
         self.inTheHand = False
 
-def TableSituation(table):
-    for player in table:
-        print(f"Player {player.table_seat}: Chips = {player.chips}")
-    print(f"Total pot: {Player.pot}")
+    def PrintCards(self):
+        s = f"[{self.cards[0]} {self.cards[1]}]"
+        for i in range(2, len(self.cards)):
+            s+=f" {self.cards[i]}"
+        print(s)
+
+
+def PrintBlanks(n):
+    for i in range(0, n):
+        print("")
 
 def Hand(table):
+    def AwardPot():
+        #Check if there is only one player left
+        if PlayersLeft() == 1:
+            for i in range(0, len(table)):
+                if table[i].inTheHand:
+                    table[i].chips += Player.pot
+                    Player.pot = 0
+        #Todo at AwardPot(): check who won at showdown
+
+    def PrintTableSituation():
+        for player in table:
+            print(f"Player {player.table_seat}: Chips = {player.chips}")
+        print(f"Total pot: {Player.pot}")
+
+    def PlayersLeft():
+        left = 0
+        for i in range(0, len(table)):
+            if table[i].inTheHand:
+                left+=1
+        return left
 
     def RotateBTN():
         btn = 999
@@ -114,18 +139,26 @@ def Hand(table):
         for player in table:
             player.lastAction = False
 
+    def ResetCurBet():
+        for player in table:
+            player.cur_bet = 0
+
     def BettingMenu(player):  
-        print("")  
         min_before = Player.min_bet
-        print(f"Player{player.table_seat}. You have: {player.chips}")
-        print(f"Min bet is {Player.min_bet}, you already have {player.cur_bet} on the table")
+        PrintBlanks(10)
+        print(f"Player{player.table_seat}'s turn")
+        print(f"Pot: {Player.pot}")
+        player.PrintCards()
+        print(f"You have: {player.chips} chips.")
+        print(f"Min-bet is {Player.min_bet} chips.")
+        print(f"Your current bet: {player.cur_bet} chips.")
         choice = ""
         if player.cur_bet == Player.min_bet:
             while choice!="A" and choice!="C" and choice!="R":
                 print("[A]: All in")
                 print("[C]: Check")
                 print("[R]: Raise")
-                choice = input("Your decision:")
+                choice = input("Your decision: ")
                 if choice == "A": player.AllIn()
                 if choice == "C": player.Check()
                 if choice == "R": player.Raise()
@@ -134,7 +167,7 @@ def Hand(table):
             while choice!="A" and choice!="F":
                 print("[A]: All in")
                 print("[F]: Fold")
-                choice = input("Your decision:")
+                choice = input("Your decision: ")
                 if choice == "A": player.AllIn()
                 if choice == "F": player.Fold()
 
@@ -144,7 +177,7 @@ def Hand(table):
                 print("[C]: Call")
                 print("[R]: Raise")
                 print("[F]: Fold")
-                choice = input("Your decision:")
+                choice = input("Your decision: ")
                 if choice == "A": player.AllIn()
                 if choice == "C": player.Call()
                 if choice == "R": player.Raise()
@@ -154,7 +187,7 @@ def Hand(table):
             last_to_play = player.table_seat-1
             while(table[last_to_play].inTheHand==False):
                 last_to_play -= 1
-            print(f"Last to play should be {last_to_play}")
+            print(f"Last to play is {last_to_play}")
             ResetLastAction()
             table[last_to_play].lastAction = True
 
@@ -174,6 +207,7 @@ def Hand(table):
             person.cards = []
         return
 
+    #if everyone folds, bb doesnt have to check
     def PreFlopBets():
         for i in range(0, len(table)):
             if table[i].isBTN:
@@ -192,13 +226,67 @@ def Hand(table):
 
         cur_player = first
         while(1):
+            if cur_player>=len(table): cur_player-=len(table)    
+
+            if table[cur_player].inTheHand and table[cur_player].inTheGame:
+                if PlayersLeft()!=1: BettingMenu(table[cur_player])
+                else:
+                    return True
+            if table[cur_player].lastAction: break #If the lastAction does raise, lastAction--> table[cur_player-1]
+            cur_player+=1
+
+        if PlayersLeft() == 1:
+            return True #is finished
+        return False
+
+    def Flop():
+        card1 = random.choice(deck)
+        deck.remove(card1)
+        card2 = random.choice(deck)
+        deck.remove(card2)
+        card3 = random.choice(deck)
+        deck.remove(card3)
+        for player in table:
+            player.cards.append(card1)
+            player.cards.append(card2)
+            player.cards.append(card3)
+        print(f"Flop: {card1} {card2} {card3}")
+
+    def RiverOrTurn(turn=False):
+        card = random.choice(deck)
+        deck.remove(card)
+        for player in table:
+            player.cards.append(card)
+        if turn: print(f"Turn: {card}")
+        else: print(f"River: {card}")
+
+    def BettingRound():
+        ResetLastAction()
+        ResetCurBet()
+        for i in range(0, len(table)):
+            if table[i].isBTN:
+                table[i].lastAction = True
+                cur_player = i+1
+                break
+
+        Player.min_bet = 0
+        
+        while(1):
             if cur_player>=len(table): cur_player-=len(table)          
             if table[cur_player].inTheHand and table[cur_player].inTheGame: BettingMenu(table[cur_player])
 
-
             if table[cur_player].lastAction: break #If the lastAction does raise, lastAction--> table[cur_player-1]
             cur_player+=1
-            
+        if PlayersLeft() == 1:
+            return True #is finished
+        return False
+        
+    def NextHand():
+        RotateBTN()
+        ResetLastAction()
+        TakeCards()
+        ResetCurBet()
+
     deck = ["2A", "3A", "4A", "5A", "6A", "7A", "8A", "9A", "10A", "JA", "QA", "KA", "AA",
         "2B", "3B", "4B", "5B", "6B", "7B", "8B", "9B", "10B", "JB", "QB", "KB", "AB",
         "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "10C", "JC", "QC", "KC", "AC",
@@ -208,14 +296,37 @@ def Hand(table):
     #for player in table:
     #    print(player.cards)
 
-    PreFlopBets()
-    TableSituation(table)
+    is_finished = PreFlopBets()
+    if is_finished:
+        AwardPot()
+        NextHand()
+        return
 
+    PrintTableSituation()
+    Flop()
+    is_finished = BettingRound()  
+    if is_finished:
+        AwardPot()
+        NextHand()
+        return
+    RiverOrTurn(turn=True)
+    is_finished = BettingRound()  
+    if is_finished:
+        AwardPot()
+        NextHand()
+        return
+    RiverOrTurn(turn=False)
+    is_finished = BettingRound()  
+    if is_finished:
+        AwardPot()
+        NextHand()
+        return
 
-    RotateBTN()
-    ResetLastAction()
-    TakeCards()
+    #Check who won, announce it, reward it
+    AwardPot() #NOT CHECKING WHO WON YET (ToDo)
+    NextHand()
     return
+
 
 def Game():
     table = []
@@ -223,7 +334,8 @@ def Game():
     table[0].isBTN = True
     while(1):
         Hand(table)
-        input("")
+        print("Next hand starting soon")
+        time.sleep(3)
     
 
 Game()
