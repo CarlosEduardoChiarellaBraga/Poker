@@ -43,3 +43,16 @@ For each one of these values, a certain amount of values will follow them, due t
     
     Ex: [5, 14, 13, 10, 8, 7]  (Flush) (The hand is: A K T 8 7 (suited)). Note that the difference from this example to the example of the idx[0] == 0 is only the first value.
 
+### For idx[0] == 6:
+    Two values will follow. The first and the second will be the values of the full house. The first one will be the three of a kind and the second will be the pair.
+    Ex: [6, 8, 7] (Full Hose: Eights fulls of Sevens) (The hand is: 8 8 8 7 7)
+    Ex: [6, 7, 8] (Full Hose: Sevens fulls of Eights) (The hand is: 7 7 7 8 8)
+
+### For idx[0] == 7:
+    Two values will follow. The first will be the values of the four of a kind. The second one will be the kicker.
+    Ex: [7, 8, 7] (Four of a kind: Eights fulls of Sevens) (The hand is: 8 8 8 7 7)
+    Ex: [6, 7, 8] (Full Hose: Sevens fulls of Eights) (The hand is: 7 7 7 8 8)
+
+### For idx[0] == 8:
+    One value will follow. Thats is the starting point of the straight
+    Ex: [8, 8] (Straight Flush: 8 to Q) (The hand is: 8 9 T J Q(suited))
