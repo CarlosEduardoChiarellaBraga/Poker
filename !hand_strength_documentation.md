@@ -69,5 +69,6 @@ Whoever has the highest value first will be the winner. If every index's value i
 ## Change:
 Instead of being stored in a list, the strength of the hand will be stored as an integer, with the goal of checking each hand is greater in a easier way.
 Every hand value will have 11 digits.
+
 Ex: (Straight flush): 8 08 00 00 00 00 -> 80800000000
 
