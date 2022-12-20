@@ -33,7 +33,7 @@ For each one of these values, a certain amount of values will follow them, due t
 
 ### For idx[0] == 4:
 
-    One value will follow. Thats is the starting point of the straight
+    One value will follow. That is the starting point of the straight
     
     Ex: [4, 8] (Straight: 8 to Q) (The hand is: 8 9 T J Q)
     
