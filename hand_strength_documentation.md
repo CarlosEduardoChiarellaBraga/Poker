@@ -2,7 +2,7 @@
 The hands will be stored in a list
 The first index of the list will represent what type of hand it is, in the order of their strength:
 
-0->high card, 1->pair, 2->two pair, 3->3 of a kind, 4->straight, 5->flush, 6->full house, 7->quads, 8->straight flush
+0->high card, 1->pair, 2->two pair, 3->three of a kind, 4->straight, 5->flush, 6->full house, 7->quads, 8->straight flush
 
 For each one of these values, a certain amount of values will follow them, due to tiebreaks. 
 
