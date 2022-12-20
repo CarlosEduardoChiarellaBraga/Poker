@@ -62,3 +62,7 @@ For each one of these values, a certain amount of values will follow them, due t
     One value will follow. Thats is the starting point of the straight
     
     Ex: [8, 8] (Straight Flush: 8 to Q) (The hand is: 8 9 T J Q(suited))
+    
+## Checking who won:
+Whoever has the highest value first will be the winner. If every index's value is equal, it is a tie.
+
