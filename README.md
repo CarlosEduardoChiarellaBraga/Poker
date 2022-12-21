@@ -14,4 +14,4 @@ Goal: make the necessary functions to run a poker game
 03. Blinds increasing system.
 
 ## What is being done:
-Im currently focusing on the checking the hand strength
+Im currently focusing on comparing the hand strength and checking the winner
