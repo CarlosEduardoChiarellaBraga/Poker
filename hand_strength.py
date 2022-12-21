@@ -75,7 +75,29 @@ def HandStrength(cards):
         return val_
 
     def straight():
-        pass
+        possible_straight = []
+        for card in cards:
+            if card[0] not in possible_straight: #(check if the cards are repeated)
+                possible_straight.append(card[0])
+            
+        possible_straight.sort(key=lambda x: str_values.index(x))
+        val_ = -1
+        #Check if it is straight
+        for i in range(len(possible_straight) - 4):
+            possibility = possible_straight[i:i+5]
+            if (str_values.index(possibility[-1][0]) - str_values.index(possibility[0][0])) == 4: #Check if it is a straight
+                #Adding the value if it is higher than the current
+                if str_values.index(possibility[0][0])>val_: 
+                    val_ = str_values.index(possibility[0][0])
+        #Check special case ("A, 2, 3, 4 ,5")
+        if possible_straight[-1] == "A":
+            if "2" in possible_straight and "3" in possible_straight and "4" in possible_straight and "5" in possible_straight:
+                if val_<1:
+                    val_ = 1
+        if val_ > 0:
+            val_ += 400
+            val_ = val_ * 100000000
+        return val_
 
     #Check if hand is: High card, Pair, Two pair, Three of a kind, Full house or Four of a kind
     def count_repeated():    
@@ -214,7 +236,6 @@ def HandStrength(cards):
     #check if it is straight_flush
     val_temp = straight_flush()
     if val < val_temp: val = val_temp
-    if val > 80000000000: return val
 
     #check for: pair, two pair, three of a kind, full house, four of a kind
     val_temp = count_repeated()
