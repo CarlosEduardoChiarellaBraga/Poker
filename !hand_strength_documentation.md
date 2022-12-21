@@ -50,14 +50,14 @@ For each one of these values, a certain amount of values will follow them, due t
     Ex: [6, 08, 07] (Full Hose: Eights fulls of Sevens) (The hand is: 8 8 8 7 7)
     Ex: [6, 07, 08] (Full Hose: Sevens fulls of Eights) (The hand is: 7 7 7 8 8)
 
-### For idx[0] == 7:
+### For idx[0] == 7: (Four of a kind)
     
     Two values will follow. The first will be the values of the four of a kind. The second one will be the kicker.
     
-    Ex: [7, 08, 07] (Four of a kind: Eights fulls of Sevens) (The hand is: 8 8 8 7 7)
+    Ex: [7, 08, 07] (Four of a kind: Four eights, seven kicker) (The hand is: 8 8 8 8 7)
     Ex: [6, 07, 08] (Full Hose: Sevens fulls of Eights) (The hand is: 7 7 7 8 8)
 
-### For idx[0] == 8:
+### For idx[0] == 8: (Straigth Flush)
     
     One value will follow. Thats is the starting point of the straight
     
