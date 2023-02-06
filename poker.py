@@ -1,25 +1,23 @@
 import random
-import time 
-
-#ToDo's:
-#1-->blind increase system (time)
-#2-->check who won at showdown at AwardPot()
-#3-->sidepots at AwardPot. Idea: change the Player.pot from being an integer to a list. I will have to keep track of which player is on each pot, and know how to divide it.
+import time
+from hand_strength import HandStrength
+from operator import itemgetter
 
 #Setting game variables:
-num_players = 9
-
+num_players = 9 #Players at the table
 
 class Player:
     inTheHand = True
     inTheGame = True
     isBTN = False
     lastAction = False
+    isAllIn = False
     starting_chips = 5000
     cur_bet = 0
     blinds = 30 #(BB)
     min_bet = 0 #Keep track of the min bet
     pot = 0
+    hand_strength = 0
 
     def __init__(self, table_seat, cards):
         self.chips = Player.starting_chips
@@ -73,6 +71,7 @@ class Player:
             self.AllIn()
 
     def AllIn(self):
+        self.isAllIn = True
         self.cur_bet+=self.chips
         Player.pot += self.chips
         self.chips = 0
@@ -98,15 +97,30 @@ def PrintBlanks(n):
         print("")
 
 def Hand(table):
-    def AwardPot():
-        #Check if there is only one player left
+    def Winner():
+        #Classify the people on the table, from first to last (for multi-pots hands)
         if PlayersLeft() == 1:
             for i in range(0, len(table)):
                 if table[i].inTheHand:
-                    table[i].chips += Player.pot
-                    Player.pot = 0
-        #Todo at AwardPot(): check who won at showdown
+                    return [[table[i].hand_strength, i]]
+        winners = []
+        for i in range(0, len(table)):
+            if table[i].inTheHand:
+                table[i].hand_strength = HandStrength(table[i].cards)
+                winners.append([table[i].hand_strength, i])
+                winners.sort(key=itemgetter(0), reverse=True)
+        print(winners)
+        return winners
 
+    def AwardPot():
+        w = Winner()
+        if len(w) == 1: 
+            table[w[0][1]].chips += Player.pot
+            Player.pot = 0
+        else: #Side pots not implemented yet
+            table[w[0][1]].chips += Player.pot 
+            Player.pot = 0
+        
     def PrintTableSituation():
         for player in table:
             print(f"Player {player.table_seat}: Chips = {player.chips}")
@@ -143,7 +157,13 @@ def Hand(table):
         for player in table:
             player.cur_bet = 0
 
-    def BettingMenu(player):  
+    def ResetAllIn():
+        for player in table:
+            player.isAllIn = False
+
+    def BettingMenu(player): 
+        if player.isAllIn:
+            return 
         min_before = Player.min_bet
         PrintBlanks(10)
         print(f"Player{player.table_seat}'s turn")
@@ -207,7 +227,6 @@ def Hand(table):
             person.cards = []
         return
 
-    #if everyone folds, bb doesnt have to check
     def PreFlopBets():
         for i in range(0, len(table)):
             if table[i].isBTN:
@@ -280,21 +299,21 @@ def Hand(table):
         if PlayersLeft() == 1:
             return True #is finished
         return False
-        
+
     def NextHand():
         RotateBTN()
         ResetLastAction()
         TakeCards()
+        ResetAllIn()
         ResetCurBet()
+        
 
-    deck = ["2A", "3A", "4A", "5A", "6A", "7A", "8A", "9A", "10A", "JA", "QA", "KA", "AA",
-        "2B", "3B", "4B", "5B", "6B", "7B", "8B", "9B", "10B", "JB", "QB", "KB", "AB",
-        "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "10C", "JC", "QC", "KC", "AC",
-        "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "10D", "JD", "QD", "KD", "AD"]
-    Deal() #Set the self.inTheHand to true for every one in the Game
-
-    #for player in table:
-    #    print(player.cards)
+    deck = ["2A", "3A", "4A", "5A", "6A", "7A", "8A", "9A", "TA", "JA", "QA", "KA", "AA",
+        "2B", "3B", "4B", "5B", "6B", "7B", "8B", "9B", "TB", "JB", "QB", "KB", "AB",
+        "2C", "3C", "4C", "5C", "6C", "7C", "8C", "9C", "TC", "JC", "QC", "KC", "AC",
+        "2D", "3D", "4D", "5D", "6D", "7D", "8D", "9D", "TD", "JD", "QD", "KD", "AD"]
+   
+    Deal()
 
     is_finished = PreFlopBets()
     if is_finished:
@@ -323,7 +342,7 @@ def Hand(table):
         return
 
     #Check who won, announce it, reward it
-    AwardPot() #NOT CHECKING WHO WON YET (ToDo)
+    AwardPot() 
     NextHand()
     return
 
@@ -332,8 +351,20 @@ def Game():
     table = []
     for i in range(0, num_players): table.append(Player(i, []))
     table[0].isBTN = True
-    while(1):
+    while(1):            
         Hand(table)
+        left = 0
+        for i in range(0, len(table)):
+            if table[i].chips <= 0:
+                table[i].inTheGame = False
+
+            if table[i].inTheGame:
+                left+=1
+                index = i
+        if left == 1:
+            print(f"Player {index} won")
+            return
+
         print("Next hand starting soon")
         time.sleep(3)
     
