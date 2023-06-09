@@ -245,7 +245,10 @@ def HandStrength(cards):
     val_temp = flush()
     if val < val_temp: val = val_temp
 
+    val_temp = straight()
+    if val < val_temp: val = val_temp
+
     return val
 
-cards = ["4S", "4S", "4S", "4S", "JS", "TH", "3H"]
-print(HandStrength(cards))
+#cards = ["2S", "3S", "4S", "5S", "6H", "TH", "3H"]
+#print(HandStrength(cards))
